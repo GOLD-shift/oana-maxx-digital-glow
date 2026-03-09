@@ -1,16 +1,30 @@
-import { motion } from "framer-motion";
-import { Phone, MapPin, Clock, Star } from "lucide-react";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Phone, MapPin, Clock, Star, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import heroImage from "@/assets/hero-salon.jpg";
 
 const HeroSection = () => {
   const [formData, setFormData] = useState({ name: "", phone: "", service: "" });
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const message = `Bună! Mă numesc ${formData.name}. Aș dori o programare pentru ${formData.service}. Numărul meu: ${formData.phone}`;
     window.open(`https://wa.me/40721524296?text=${encodeURIComponent(message)}`, "_blank");
   };
+
+  const navLinks = [
+    { href: "#servicii", label: "Servicii" },
+    { href: "#galerie", label: "Galerie" },
+    { href: "#despre", label: "Despre Noi" },
+  ];
 
   return (
     <section className="relative min-h-screen overflow-hidden">
@@ -20,26 +34,82 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/85 via-charcoal/60 to-charcoal/30" />
       </div>
 
-      {/* Nav */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-5 lg:px-16">
+      {/* Nav — sticky */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 lg:px-16 transition-all duration-300 ${
+          scrolled ? "bg-charcoal/90 backdrop-blur-md shadow-lg" : "bg-transparent"
+        }`}
+      >
+        {/* Logo */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
           <h2 className="font-display text-2xl font-bold text-primary-foreground tracking-wide">
             OANA <span className="text-rose-gold">MAXX</span>
           </h2>
           <p className="text-xs tracking-[0.3em] text-rose-gold-light font-body">BEAUTY SALON</p>
         </motion.div>
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="hidden md:flex items-center gap-6 text-sm text-primary-foreground/80 font-body">
-          <a href="#servicii" className="hover:text-rose-gold transition-colors">Servicii</a>
-          <a href="#galerie" className="hover:text-rose-gold transition-colors">Galerie</a>
-          <a href="#despre" className="hover:text-rose-gold transition-colors">Despre Noi</a>
-          <a href="tel:0721524296" className="bg-gradient-rose px-5 py-2.5 rounded-full text-primary-foreground font-medium hover:opacity-90 transition-opacity">
+
+        {/* Desktop links */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="hidden md:flex items-center gap-6 text-sm text-primary-foreground/80 font-body"
+        >
+          {navLinks.map((link) => (
+            <a key={link.href} href={link.href} className="hover:text-rose-gold transition-colors">
+              {link.label}
+            </a>
+          ))}
+          <a
+            href="tel:0721524296"
+            className="bg-gradient-rose px-5 py-2.5 rounded-full text-primary-foreground font-medium hover:opacity-90 transition-opacity"
+          >
             Sună Acum
           </a>
         </motion.div>
+
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden text-primary-foreground p-2 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label="Meniu"
+        >
+          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </nav>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 px-6 lg:px-16 pt-12 lg:pt-20 pb-20">
+      {/* Mobile menu dropdown */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-[68px] left-0 right-0 z-40 bg-charcoal/95 backdrop-blur-md border-t border-rose-gold/20 flex flex-col px-6 py-4 gap-4 md:hidden"
+          >
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="text-primary-foreground/80 font-body text-base py-2 border-b border-white/10 hover:text-rose-gold transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+            <a
+              href="tel:0721524296"
+              onClick={() => setMenuOpen(false)}
+              className="bg-gradient-rose text-primary-foreground font-body font-semibold text-center py-3 rounded-full mt-2 hover:opacity-90 transition-opacity"
+            >
+              Sună Acum — 0721 524 296
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Content — pt-24 pentru a compensa nav-ul fixed */}
+      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 px-6 lg:px-16 pt-32 lg:pt-36 pb-20">
         {/* Left */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -107,6 +177,8 @@ const HeroSection = () => {
                 placeholder="Număr de telefon"
                 required
                 maxLength={15}
+                pattern="[0-9]{10}"
+                title="Introdu un număr de telefon valid (10 cifre)"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl bg-secondary text-foreground placeholder:text-muted-foreground border border-border focus:border-rose-gold focus:ring-1 focus:ring-rose-gold outline-none transition-all font-body text-sm"
@@ -134,7 +206,10 @@ const HeroSection = () => {
             </div>
 
             <p className="text-center text-xs text-muted-foreground mt-4 font-body">
-              Sau sună direct: <a href="tel:0721524296" className="text-rose-gold font-medium">0721 524 296</a>
+              Sau sună direct:{" "}
+              <a href="tel:0721524296" className="text-rose-gold font-medium">
+                0721 524 296
+              </a>
             </p>
           </form>
         </motion.div>
