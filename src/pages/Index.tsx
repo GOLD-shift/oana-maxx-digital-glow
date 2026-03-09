@@ -4,6 +4,7 @@ import WhyUsSection from "@/components/WhyUsSection";
 import GallerySection from "@/components/GallerySection";
 import FAQSection from "@/components/FAQSection";
 import CTASection from "@/components/CTASection";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
       <GallerySection />
       <FAQSection />
       <CTASection />
+      <WhatsAppFloat />   {/* ← adaugă aici */}
     </main>
   );
 };
